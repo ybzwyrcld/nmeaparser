@@ -1,0 +1,7 @@
+.vs
+out
+build
+*.o
+example/*.o
+src/*.o
+nmea_parse
