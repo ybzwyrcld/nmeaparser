@@ -12,24 +12,34 @@ using libnmeaparser::NmeaParser;
 using libnmeaparser::GPSLocation;
 
 namespace {
-constexpr char gpgga[] =
-    "$GPGGA,084935.00,2232.6706239,N,11406.2752992,E,2,06,5.8,12.3588,M,"
-    "-2.855,M,02,3572*78";
 
-};  // namespace
+constexpr char gpgga[] =
+    "$GPGGA,013353.00,2234.2187840,N,11356.2551977,E,"
+    "4,18,1.6,52.6895,M,-3.509,M,02,3397*76";
+
+constexpr char gprmc[] =
+    "$GPRMC,013353.00,A,2234.2187840,N,11356.2551977,E,"
+    "000.013,308.5,020719,0.0,W,D*29";
+
+}  // namespace
 
 int main(void) {
   NmeaParser parser;
   parser.Init();
-  parser.OnNmeaCallback([](const char *line) { printf("NMEA: %s", line); });
+  parser.OnNmeaCallback([](const char *line) {
+    printf("NMEA: %s\r\n", line);
+  });
   parser.OnLocationCallback([](const GPSLocation &location) {
-      printf("timestamp: %ld, status: %d, age: %f, accuracy: %f, "
-             "log: %lf%c, lat: %lf%c, alt: %f, su: %d\n",
-             location.timestamp, location.position,
+      printf("time: %s, status: %d, age: %f, accuracy: %f, "
+             "log: %lf%c, lat: %lf%c, alt: %f, su: %d, "
+             "speed: %f, bearing: %f\r\n",
+             location.utc_time, location.position,
              location.age, location.accuracy,
              location.longitude, location.longitude_hemisphere,
              location.latitude, location.latitude_hemisphere,
-             location.altitude, location.satellites_used);
+             location.altitude, location.satellites_used,
+             location.speed, location.bearing);
   });
   parser.PutNmeaLine(gpgga);
+  parser.PutNmeaLine(gprmc);
 }

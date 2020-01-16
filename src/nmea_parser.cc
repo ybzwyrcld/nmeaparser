@@ -11,8 +11,11 @@
 
 
 namespace libnmeaparser {
+
 namespace {
+
 constexpr int kSecondsForOneDay = 24 * 3600;
+
 bool NmeaLineSplit(const std::string &str, std::vector<std::string> *v) {
   if (v == nullptr) return false;
   v->clear();
@@ -39,12 +42,23 @@ double ConvertFromHhmm(const double &in) {
   double dcoord = degrees + minutes / 60.0;
   return dcoord;
 }
+
 }  // namespace
+
+NmeaParser::NmeaParser() {
+  nmea_callback_ = [](const char *){};
+  location_callback_ = [](const GPSLocation &){};
+}
+
 void NmeaParser::Init(void) {
   memset(&gps_location_, 0x0, sizeof(gps_location_));
   gps_location_.timestamp = 1578278163U;
+  memset(gps_location_.utc_time, 0x30, sizeof(gps_location_.utc_time) - 1);
+  gps_location_.utc_time[sizeof(gps_location_.utc_time) - 1] = 0;
 }
+
 void NmeaParser::Run(void) {}
+
 bool NmeaParser::PutNmeaLine(const std::string& in) {
   NmeaLineSplit(in, &tokenizer_);
 #if 0
@@ -56,14 +70,15 @@ bool NmeaParser::PutNmeaLine(const std::string& in) {
   nmea_callback_(in.c_str());
   return true;
 }
+
 void NmeaParser::NmeaParse(void) {
+  int pos = 0;
   if (tokenizer_.empty()) return;
   if (tokenizer_[0].find("GGA") != std::string::npos) {
-    gps_location_.timestamp =
-        gps_location_.timestamp / kSecondsForOneDay * kSecondsForOneDay +
-        std::stoi(tokenizer_[1].substr(0, 2))*3600 +
-        std::stoi(tokenizer_[1].substr(2, 2))*60 +
-        std::stoi(tokenizer_[1].substr(4, 2));
+    pos = 6;
+    for (auto ch : tokenizer_[1]) {
+      if (ch != '.') gps_location_.utc_time[pos++] = ch;
+    }
     gps_location_.latitude = ConvertFromHhmm(std::stod(tokenizer_[2]) / 100.0);
     gps_location_.latitude_hemisphere = tokenizer_[3][0];
     gps_location_.longitude = ConvertFromHhmm(std::stod(tokenizer_[4]) / 100.0);
@@ -74,6 +89,24 @@ void NmeaParser::NmeaParse(void) {
     gps_location_.altitude = std::stof(tokenizer_[9]);
     gps_location_.age = std::stof(tokenizer_[13]);
     location_callback_(gps_location_);
+  } else if (tokenizer_[0].find("RMC") != std::string::npos) {
+    pos = 6;
+    for (auto ch : tokenizer_[1]) {
+      if (ch != '.') gps_location_.utc_time[pos++] = ch;
+    }
+    gps_location_.latitude = ConvertFromHhmm(std::stod(tokenizer_[3]) / 100.0);
+    gps_location_.latitude_hemisphere = tokenizer_[4][0];
+    gps_location_.longitude = ConvertFromHhmm(std::stod(tokenizer_[5]) / 100.0);
+    gps_location_.longitude_hemisphere = tokenizer_[6][0];
+    gps_location_.speed = std::stod(tokenizer_[7]);
+    gps_location_.bearing = std::stod(tokenizer_[8]);
+    pos = 0;
+    std::string date = tokenizer_[9].substr(4, 2) +
+                       tokenizer_[9].substr(2, 2) +
+                       tokenizer_[9].substr(0, 2);
+    for (auto ch : date) gps_location_.utc_time[pos++] = ch;
+    location_callback_(gps_location_);
   }
 }
-};  // namespace libnmeaparser
+
+}  // namespace libnmeaparser

@@ -31,6 +31,7 @@ struct GPSLocation {
   double longitude;
   double altitude;
   int64_t timestamp;
+  char utc_time[15];  // yymmddhhmmss{ms}{ms}{\0}
 };
 
 using LocationCallback = std::function<void(const GPSLocation &)>;
@@ -38,7 +39,7 @@ using NmeaCallback = std::function<void(const char *)>;
 
 class NmeaParser {
  public:
-  NmeaParser() = default;
+  NmeaParser();
   ~NmeaParser() {}
   void Init(void);
   void Run(void);
@@ -58,6 +59,6 @@ class NmeaParser {
   NmeaCallback nmea_callback_;
 };
 
-};  // namespace libnmeaparser
+}  // namespace libnmeaparser
 
 #endif  // NMEAPARSER_NMEA_PARSER_H_
