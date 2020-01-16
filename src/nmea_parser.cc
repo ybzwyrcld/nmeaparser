@@ -7,6 +7,7 @@
 
 #include "nmea_parser.h"
 
+#include <math.h>
 #include <string.h>
 
 
