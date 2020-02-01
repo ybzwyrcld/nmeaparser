@@ -86,9 +86,12 @@ void NmeaParser::NmeaParse(void) {
     gps_location_.longitude_hemisphere = tokenizer_[5][0];
     gps_location_.position = std::stoi(tokenizer_[6]);
     gps_location_.satellites_used = std::stoi(tokenizer_[7]);
-    gps_location_.accuracy = std::stof(tokenizer_[8]);
-    gps_location_.altitude = std::stof(tokenizer_[9]);
-    gps_location_.age = std::stof(tokenizer_[13]);
+    if (!tokenizer_[8].empty())
+      gps_location_.accuracy = std::stof(tokenizer_[8]);
+    if (!tokenizer_[9].empty())
+      gps_location_.altitude = std::stof(tokenizer_[9]);
+    if (!tokenizer_[13].empty())
+      gps_location_.age = std::stof(tokenizer_[13]);
     location_callback_(gps_location_);
   } else if (tokenizer_[0].find("RMC") != std::string::npos) {
     pos = 6;
