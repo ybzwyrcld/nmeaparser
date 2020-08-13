@@ -98,6 +98,7 @@ bool NmeaParser::PutNmeaLine(const std::string& in) {
   return true;
 }
 
+// 获取UTC时间与本地时间的差值.
 void NmeaParser::UpdateUTCTimeDifference(void) {
   auto tt = std::chrono::system_clock::to_time_t(
 			std::chrono::system_clock::now());
@@ -108,14 +109,16 @@ void NmeaParser::UpdateUTCTimeDifference(void) {
 	utc_time_difference_ = static_cast<int>(mktime(&local_now)-mktime(&utc_now));
 }
 
+// 部分定位模块可能未开启'ZDA'语句输出, 这样就无法得到完整的年份,
+// 因此需要获取系统的UTC日期.
 void NmeaParser::UpdateTime(std::string const& time) {
   if (time.empty()) return;
   struct tm time_now {};
-  if (utc_year_ < 0) {
+  if (utc_year_ < 2000) {
     auto tt = std::chrono::system_clock::to_time_t(
 			  std::chrono::system_clock::now());
     gmtime_r(&tt, &time_now);
-    utc_year_ = time_now.tm_year+1900;
+    utc_year_ = (time_now.tm_year+1900)/100*100+utc_year_%100;
     utc_month_ = time_now.tm_mon+1;
     utc_day_ = time_now.tm_mday;
   } else {
