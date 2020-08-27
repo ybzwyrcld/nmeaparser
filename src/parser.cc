@@ -164,9 +164,11 @@ void NmeaParser::UpdateDay(std::string const& day) {
 
 void NmeaParser::UpdateDate(std::string const& date,
                             std::string const& time) {
-  UpdateYear(date.substr(4, 2));
-  UpdateMonth(date.substr(2, 2));
-  UpdateDay(date.substr(0, 2));
+  if (!date.empty()) {
+    UpdateYear(date.substr(4, 2));
+    UpdateMonth(date.substr(2, 2));
+    UpdateDay(date.substr(0, 2));
+  }
   UpdateTime(time);
 }
 
