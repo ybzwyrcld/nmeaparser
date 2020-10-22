@@ -291,6 +291,12 @@ void NmeaParser::NmeaParse(void) {
     UpdateMonth(tokenizer_[3]);
     UpdateYear(tokenizer_[4]);
     UpdateTime(tokenizer_[1]);
+  } else if (tokenizer_[0].find("STI") != std::string::npos) {
+    // $PSTI,030,033010.000,A,2447.0895508,N,12100.5234656,E,
+    // 94.615,0.00,‐0.01,0.04,111219,R,0.999,3.724*1A 
+    if (tokenizer_[1].find("030") != std::string::npos) {
+      UpdateAgeOfDGPS(tokenizer_[14]);
+    }
   } else {
     return;
   }
