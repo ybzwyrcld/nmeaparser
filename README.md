@@ -8,7 +8,7 @@ GNSS NMEA-0183 protocal universal parser.
 Clone and run the build:
 
 ```bash
-$ git clone https://github.com/hanoi404/nmeaparser && cd nmeaparser
+$ git clone https://github.com/sevensx/nmeaparser && cd nmeaparser
 $ make all
 ```
 
